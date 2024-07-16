@@ -1,62 +1,64 @@
 import requests
-import matplotlib.pyplot as plt
 
-# Replace with your Google Maps Platform API key
-API_KEY = "86de2fa8e7f3206fe99d9084fba1e886"
+# Constants
+TRAFFIC_API_ENDPOINT = "https://maps.googleapis.com/maps/api/directions/json"
+API_KEY = "db8ac93e0448118581a295f9bfb4283a"  # Replace with your actual API key
 
-class GoogleMapsAPI:
-    def __init__(self, api_key):
-        self.api_key = api_key
+def fetch_traffic_data(start, destination):
+    """
+    Fetches real-time traffic data from Google Maps Directions API.
 
-    def get_traffic_data(self, origin, destination):
-        """Fetches traffic data from Google Maps Platform."""
-        base_url = "https://maps.googleapis.com/maps/api/directions/json"
-        params = {
-            "origin": origin,
-            "destination": destination,
-            "mode": "driving",
-            "departure_time": "now",
-            "key": self.api_key
+    Parameters:
+    - start (str): Starting point (e.g., address or coordinates).
+    - destination (str): Destination point (e.g., address or coordinates).
+
+    Returns:
+    - dict: Traffic data including current conditions, travel time, incidents.
+    """
+    params = {
+        "origin": start,
+        "destination": destination,
+        "key": API_KEY,
+        "departure_time": "now",
+        "traffic_model": "best_guess",  # Optional parameter
+    }
+
+    response = requests.get(TRAFFIC_API_ENDPOINT, params=params)
+    data = response.json()
+
+    # Extract traffic information
+    if data["status"] == "OK":
+        route = data["routes"][0]
+        traffic_info = {
+            "summary": route["summary"],
+            "duration_in_traffic": route["legs"][0]["duration_in_traffic"]["text"],
+            "traffic_condition": route["legs"][0]["traffic_speed_entry"][0]["status"],
+            # You can extract more details as needed
         }
-        try:
-            response = requests.get(base_url, params=params)
-            response.raise_for_status()  # Raise exception for HTTP errors
-            data = response.json()
-            return data
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching traffic data: {e}")
-            return None
+        return traffic_info
+    else:
+        return None
 
-class TrafficVisualizer:
-    def visualize_traffic(self, traffic_data):
-        """Visualizes traffic data using a bar chart."""
-        if traffic_data:
-            try:
-                legs = traffic_data['routes'][0]['legs']
-                duration = legs[0]['duration']['value']  # Seconds
-                duration_in_minutes = duration / 60
-                print(f"Estimated travel time: {duration_in_minutes} minutes")
+def display_traffic_info(traffic_data):
+    """
+    Displays the traffic information to the user.
 
-                # Create bar chart
-                plt.figure(figsize=(8, 6))
-                plt.bar(["Travel Time"], [duration_in_minutes], color='blue')
-                plt.xlabel('Trip')
-                plt.ylabel('Time (minutes)')
-                plt.title('Estimated Travel Time')
-                plt.grid(True)
-                plt.show()
-            except KeyError:
-                print("Unexpected response format from Google Maps API.")
-        else:
-            print("No traffic data available.")
+    Parameters:
+    - traffic_data (dict): Traffic data dictionary containing current conditions,
+                           travel time, incidents, etc.
+    """
+    if traffic_data:
+        print("Current Traffic Information:")
+        print(f"Route Summary: {traffic_data['summary']}")
+        print(f"Estimated Travel Time: {traffic_data['duration_in_traffic']}")
+        print(f"Traffic Condition: {traffic_data['traffic_condition']}")
+    else:
+        print("Failed to fetch traffic data. Please check your inputs.")
 
-def main():
-    origin = "New York, NY"
-    destination = "Los Angeles, CA"
+if __name__ == "__main__":
+    # Example usage
+    start = input("Enter starting point: ")
+    destination = input("Enter destination: ")
 
-    google_maps = GoogleMapsAPI(API_KEY)
-    traffic_data = google_maps.get_traffic_data(origin, destination)
-
-    visualizer = TrafficVisualizer()
-    visualizer.visualize_traffic(traffic_data)
-
+    traffic_data = fetch_traffic_data(start, destination)
+    display_traffic_info(traffic_data)
