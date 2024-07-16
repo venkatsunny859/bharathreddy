@@ -1,0 +1,62 @@
+import requests
+import matplotlib.pyplot as plt
+
+# Replace with your Google Maps Platform API key
+API_KEY = "86de2fa8e7f3206fe99d9084fba1e886"
+
+class GoogleMapsAPI:
+    def __init__(self, api_key):
+        self.api_key = api_key
+
+    def get_traffic_data(self, origin, destination):
+        """Fetches traffic data from Google Maps Platform."""
+        base_url = "https://maps.googleapis.com/maps/api/directions/json"
+        params = {
+            "origin": origin,
+            "destination": destination,
+            "mode": "driving",
+            "departure_time": "now",
+            "key": self.api_key
+        }
+        try:
+            response = requests.get(base_url, params=params)
+            response.raise_for_status()  # Raise exception for HTTP errors
+            data = response.json()
+            return data
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching traffic data: {e}")
+            return None
+
+class TrafficVisualizer:
+    def visualize_traffic(self, traffic_data):
+        """Visualizes traffic data using a bar chart."""
+        if traffic_data:
+            try:
+                legs = traffic_data['routes'][0]['legs']
+                duration = legs[0]['duration']['value']  # Seconds
+                duration_in_minutes = duration / 60
+                print(f"Estimated travel time: {duration_in_minutes} minutes")
+
+                # Create bar chart
+                plt.figure(figsize=(8, 6))
+                plt.bar(["Travel Time"], [duration_in_minutes], color='blue')
+                plt.xlabel('Trip')
+                plt.ylabel('Time (minutes)')
+                plt.title('Estimated Travel Time')
+                plt.grid(True)
+                plt.show()
+            except KeyError:
+                print("Unexpected response format from Google Maps API.")
+        else:
+            print("No traffic data available.")
+
+def main():
+    origin = "New York, NY"
+    destination = "Los Angeles, CA"
+
+    google_maps = GoogleMapsAPI(API_KEY)
+    traffic_data = google_maps.get_traffic_data(origin, destination)
+
+    visualizer = TrafficVisualizer()
+    visualizer.visualize_traffic(traffic_data)
+
