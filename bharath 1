@@ -1,0 +1,49 @@
+import requests
+import json
+import matplotlib.pyplot as plt
+import time
+
+# Replace with your OpenWeatherMap API key
+API_KEY = 4f2fe53d8edb5ce91b27f1264d9272af
+CITY = "London"
+COUNTRY = "uk"
+
+def get_weather_data():
+    """Fetches weather data from OpenWeatherMap API."""
+    base_url = "http://api.openweathermap.org/data/2.5/weather?"
+    complete_url = base_url + "appid=" + API_KEY + "&q=" + CITY + "," + COUNTRY
+    response = requests.get(complete_url)
+
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print("Error fetching data from OpenWeatherMap.")
+        return None
+
+def main():
+    while True:
+        weather_data = get_weather_data()
+        if weather_data:
+            # Extract relevant weather data
+            temperature = weather_data['main']['temp']
+            humidity = weather_data['main']['humidity']
+            wind_speed = weather_data['wind']['speed']
+
+            # Visualize data (example: temperature)
+            plt.figure(figsize=(10, 5))
+            plt.plot(time.strftime("%Y-%m-%d %H:%M:%S"), temperature, 'r-')
+            plt.xlabel("Time")
+            plt.ylabel("Temperature (Kelvin)")
+            plt.title(f"Real-Time Weather in {CITY}")
+            plt.show()
+
+            # Print weather data to console (or store in a database)
+            print(f"Temperature: {temperature} Kelvin")
+            print(f"Humidity: {humidity}%")
+            print(f"Wind Speed: {wind_speed} m/s")
+
+        time.sleep(5)  # Update interval (5 seconds)
+
+if __name__ == "__main__":
+    main()
