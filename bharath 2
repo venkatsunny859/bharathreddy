@@ -1,0 +1,26 @@
+import requests
+import json
+import os
+
+# Assuming API key is stored in an environment variable
+API_KEY = a9516806acc5509f9e4b128a841650d0
+BASE_URL = "https://api.example-supplier.com/v1"
+
+def get_product_details(product_id):
+    url = f"{BASE_URL}/products/{product_id}"
+    headers = {"Authorization": f"Bearer {API_KEY}"}  # Use Bearer token authentication
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print(f"Error fetching product details: {response.status_code}")
+        return None
+
+# Example Usage
+product_data = get_product_details(12345)
+if product_data:
+    product_name = product_data["name"]
+    price = product_data["price"]
+    # ... (Use the fetched data for inventory management)
