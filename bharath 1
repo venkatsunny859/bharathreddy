@@ -2,7 +2,7 @@
 import requests, json
 
 # Enter your API key here
-api_key = "7e4b319c48f224d0231bd7bdfbaa6024"
+api_key = "e932854329308aca7b1a97e59f54800d"
 
 # base_url variable to store url
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
@@ -65,4 +65,4 @@ if x["cod"] != "404":
                     str(weather_description))
 
 else:
-    print(" City Not Found ")
+  print(" City Not Found ")
